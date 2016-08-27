@@ -5,6 +5,7 @@ MAINTAINER Bohyung kim https://github.com/dsdstudio
 
 # Install Java 8
 RUN \
+  apt-get update && \
   apt-get -yy install software-properties-common && \
   echo oracle-java8-installer shared/accepted-oracle-license-v1-1 select true | debconf-set-selections && \
   add-apt-repository -y ppa:webupd8team/java && \
@@ -25,8 +26,8 @@ RUN arch="$(dpkg --print-architecture)" \
 
 RUN apt-key adv --keyserver ha.pool.sks-keyservers.net --recv-keys 46095ACC8548582C1A2699A9D27D666CD88E42B4
 
-ENV ELASTICSEARCH_MAJOR 2.2
-ENV ELASTICSEARCH_VERSION 2.2.0
+ENV ELASTICSEARCH_MAJOR 2.3
+ENV ELASTICSEARCH_VERSION 2.3.1
 ENV ELASTICSEARCH_REPO_BASE http://packages.elasticsearch.org/elasticsearch/2.x/debian
 
 RUN echo "deb $ELASTICSEARCH_REPO_BASE stable main" > /etc/apt/sources.list.d/elasticsearch.list
@@ -72,8 +73,8 @@ RUN \
   make install
 
 # Install user dic
-ONBUILD COPY servicecustom.csv /opt/mecab-ko-dic-2.0.1-20150707/user-dic/servicecustom.csv
-ONBUILD RUN cd /opt/mecab-ko-dic-2.0.1-20150707 &&\
+ONBUILD COPY servicecustom.csv /opt/mecab-ko-dic-2.0.1-20150920/user-dic/servicecustom.csv
+ONBUILD RUN cd /opt/mecab-ko-dic-2.0.1-20150920 &&\
   tools/add-userdic.sh &&\
   make install
 
@@ -83,14 +84,15 @@ ONBUILD COPY synonym.txt /usr/share/elasticsearch/config/synonym.txt
 ENV JAVA_TOOL_OPTIONS -Dfile.encoding=UTF8
 RUN \
   cd /opt &&\
-  wget https://mecab.googlecode.com/files/mecab-java-0.996.tar.gz &&\
+  wget https://bitbucket.org/eunjeon/mecab-java/downloads/mecab-java-0.996.tar.gz &&\
   tar xvf mecab-java-0.996.tar.gz &&\
   cd /opt/mecab-java-0.996 &&\
-  sed -i 's|/usr/lib/jvm/java-6-openjdk/include|/usr/lib/jvm/java-8-oracle/include|' Makefile &&\
+  sed -i 's|/home/parallels/Programs/jdk1.7.0_75|/usr/lib/jvm/java-8-oracle|' Makefile &&\
+  cat Makefile &&\
   make &&\
   cp libMeCab.so /usr/local/lib
 RUN plugin install mobz/elasticsearch-head
-RUN plugin install https://bitbucket.org/eunjeon/mecab-ko-lucene-analyzer/downloads/elasticsearch-analysis-mecab-ko-2.2.0.0.zip
+RUN plugin install https://bitbucket.org/eunjeon/mecab-ko-lucene-analyzer/downloads/elasticsearch-analysis-mecab-ko-2.3.1.0.zip
 
 COPY config /usr/share/elasticsearch/config
 
